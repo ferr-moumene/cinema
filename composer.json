@@ -1,0 +1,13 @@
+{
+    "name": "cinema-cosmos/payment",
+    "description": "Cinema Cosmos Chargily Pay Payment Gateway Integration",
+    "type": "project",
+    "require": {
+        "chargily/chargily-pay-php": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CinemaCosmos\\": "src/"
+        }
+    }
+}

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinema Cosmos — Movies, Showtimes & Online Booking</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Header Navigation (No Admin Panel Button!) -->
+    <header class="navbar">
+      <div class="navbar-inner">
+        <a href="#movies" class="brand-logo" onclick="navigateTo('movies')">
+          <i data-lucide="sparkles" style="color: var(--primary);"></i> CINEMA <span>COSMOS</span>
+        </a>
+
+        <ul class="nav-links">
+          <li><a href="#movies" id="nav-movies" class="active" onclick="navigateTo('movies')">Movies</a></li>
+          <li><a href="#reserve" id="nav-reserve" onclick="navigateTo('reserve')">Reserve</a></li>
+          <li><a href="#contact" id="nav-contact" onclick="navigateTo('contact')">Contact</a></li>
+          <li><a href="#policies" id="nav-policies" onclick="navigateTo('policies')">Policies</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <button id="nav-login-btn" class="btn-primary" style="padding: 0.5rem 1.1rem; border-radius: 20px; font-size: 0.88rem;" onclick="handleLoginNavClick()">
+            <i data-lucide="user" id="login-nav-icon"></i> <span id="login-nav-text">Login</span>
+          </button>
+          <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()">
+            <i data-lucide="sun" id="theme-icon"></i> <span id="theme-text">Light</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN VIEWS -->
+
+    <!-- VIEW 1: MOVIES PAGE (NOW SHOWING + PAST RESERVATIONS SECTION WHEN LOGGED IN) -->
+    <main id="view-movies" class="page-view active">
+      
+      <!-- Past Reservations Section (Unlocked After Login) -->
+      <section id="past-reservations-section" style="display: none; margin-bottom: 2.5rem;">
+        <div class="card-panel" style="border: 1px solid var(--primary);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="history" style="color: var(--primary);"></i> Your Past Reservations & Ticket History
+            </h2>
+            <span style="font-size: 0.82rem; background: var(--primary-light); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 12px; font-weight: 700;">Account Active</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;" id="past-reservations-list">
+            <!-- Dynamically populated -->
+            <div style="display: flex; gap: 1rem; background: var(--bg-input); padding: 0.9rem 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center; flex-wrap: wrap;">
+              <img src="images/poster_interstellar.jpg" alt="Interstellar" style="width: 44px; height: 62px; border-radius: 6px; object-fit: cover;">
+              <div style="flex-grow: 1;">
+                <div style="font-weight: 700; font-size: 0.95rem;">Interstellar Odyssey</div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">Today at 20:15 • Seats E5, E6 (Hall 1)</div>
+                <div style="font-size: 0.78rem; color: var(--primary); font-weight: 600; margin-top: 0.15rem;">Ref: COSMOS-8942 • Chargily Verified</div>
+              </div>
+              <button class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.82rem;" onclick="openEmailModal()">View Ticket Email</button>
+            </div>
+
+            <div style="display: flex; gap: 1rem; background: var(--bg-input); padding: 0.9rem 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center; flex-wrap: wrap;">
+              <img src="images/poster_dune.jpg" alt="Dune" style="width: 44px; height: 62px; border-radius: 6px; object-fit: cover;">
+              <div style="flex-grow: 1;">
+                <div style="font-weight: 700; font-size: 0.95rem;">Dune Awakening: Part II</div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">June 14, 2026 • 19:30 • Seats C3, C4 (VIP)</div>
+                <div style="font-size: 0.78rem; color: var(--text-dim); font-weight: 600; margin-top: 0.15rem;">Ref: COSMOS-4192 • Completed</div>
+              </div>
+              <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">Past Attendance</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <h1 class="page-title">Now Showing</h1>
+      <p class="page-subtitle">Select a movie premiere and showtime to reserve your seats.</p>
+
+      <div class="movies-grid" id="movies-grid-container">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+    </main>
+
+    <!-- VIEW 2: LOGIN PAGE -->
+    <main id="view-login" class="page-view">
+      <div style="max-width: 400px; margin: 2rem auto;">
+        <div class="card-panel">
+          <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="display: inline-flex; width: 50px; height: 50px; background: var(--primary-light); color: var(--primary); border-radius: 50%; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
+              <i data-lucide="user-check" style="width: 26px; height: 26px;"></i>
+            </div>
+            <h2>Sign In</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Sign in to view your past reservations & movie history.</p>
+          </div>
+
+          <form id="login-form" onsubmit="handleUserLogin(event)">
+            <div class="form-group">
+              <label>Username / Email</label>
+              <input type="text" id="login-username" class="form-input" placeholder="e.g. alex@cosmos.com or admin" required>
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="login-password" class="form-input" placeholder="Enter password" required>
+            </div>
+
+            <div style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 1rem;">
+              🎬 <em>Sign in with your account to see your booking history, or use admin credentials to manage the cinema.</em>
+            </div>
+
+            <button type="submit" id="btn-login-submit" class="btn-primary" style="width: 100%; padding: 0.85rem;">
+              <i data-lucide="log-in"></i> Sign In & View Movies
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 3: RESERVE SEATS -->
+    <main id="view-reserve" class="page-view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h1 class="page-title" id="reserve-movie-title">Interstellar Odyssey</h1>
+          <p class="page-subtitle" style="margin-bottom: 0;" id="reserve-movie-subtitle">Hall 1 (IMAX Laser) • Today at 20:15</p>
+        </div>
+        <button class="btn-secondary" onclick="navigateTo('movies')">
+          <i data-lucide="arrow-left"></i> Movies
+        </button>
+      </div>
+
+      <div class="reserve-layout">
+        <!-- Seat Map Card -->
+        <div class="card-panel" style="text-align: center;">
+          <div class="screen-bar"></div>
+          <div class="screen-text">SCREEN THIS WAY</div>
+
+          <div class="seats-grid" id="seats-container">
+            <!-- Seats rendered dynamically -->
+          </div>
+
+          <div class="seat-legend">
+            <div><span class="legend-dot" style="background: var(--seat-available); border: 1px solid var(--seat-available-border);"></span> Available ($14)</div>
+            <div><span class="legend-dot" style="background: var(--seat-selected);"></span> Selected</div>
+            <div><span class="legend-dot" style="background: var(--seat-vip); border: 1px solid var(--accent-gold);"></span> VIP ($22)</div>
+            <div><span class="legend-dot" style="background: var(--seat-occupied);"></span> Occupied</div>
+          </div>
+        </div>
+
+        <!-- Reservation Form Card -->
+        <div class="card-panel">
+          <h3 style="margin-bottom: 1rem;">Booking Details</h3>
+          
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>Seats:</span>
+            <strong id="summary-seats-list">None selected</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; font-size: 0.9rem;">
+            <span>Tickets:</span>
+            <strong id="summary-seats-count">0</strong>
+          </div>
+
+          <form id="customer-form" onsubmit="handleProceedToPayment(event)">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="cust-name" class="form-input" placeholder="Alex Vance" required>
+            </div>
+            <div class="form-group">
+              <label>Email Address (Ticket sent here) *</label>
+              <input type="email" id="cust-email" class="form-input" placeholder="alex@cosmos.com" required>
+            </div>
+            <div class="form-group">
+              <label>Phone Number *</label>
+              <input type="tel" id="cust-phone" class="form-input" placeholder="+1 (555) 019-2834" required>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
+              <span style="font-weight: 600;">Total:</span>
+              <span style="font-size: 1.5rem; font-weight: 800; color: var(--primary);" id="summary-total-price">$0.00</span>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;">
+              Proceed to Chargily Pay <i data-lucide="arrow-right"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 4: CHARGILY PAY PAYMENT PAGE -->
+    <main id="view-payment" class="page-view">
+      <h1 class="page-title">Chargily Pay Gateway</h1>
+      <p class="page-subtitle">Pay securely via Chargily Pay (EDAHABIA & CIB supported).</p>
+
+      <div class="payment-grid">
+        <div class="card-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; background: var(--primary-light); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid var(--primary);">
+              <i data-lucide="shield-check" style="color: var(--primary); width: 28px; height: 28px;"></i>
+              <div>
+                <strong style="color: var(--text-main); font-size: 1rem;">Official Chargily Pay Merchant</strong>
+                <p style="font-size: 0.82rem; color: var(--text-muted);">Supports EDAHABIA, CIB & International Cards.</p>
+              </div>
+            </div>
+
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+              Clicking below will launch your official Chargily Pay payment checkout. Once payment is completed, your ticket will automatically be generated and emailed to your inbox.
+            </p>
+          </div>
+
+          <div>
+            <button id="btn-chargily-pay" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1.05rem;" onclick="handleChargilyCheckout()">
+              <i data-lucide="credit-card"></i> Pay Now with Chargily Pay
+            </button>
+            <button class="btn-secondary" style="width: 100%; margin-top: 0.75rem;" onclick="simulateSuccessPayment()">
+              ⚡ Demo Test Pay (Bypass Chargily Page)
+            </button>
+          </div>
+        </div>
+
+        <div class="card-panel">
+          <h3 style="margin-bottom: 1rem;">Order Details</h3>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>Movie:</span>
+            <strong id="pay-summary-movie">Interstellar Odyssey</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>Showtime:</span>
+            <strong id="pay-summary-time">Today at 20:15</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>Seats:</span>
+            <strong id="pay-summary-seats">E5, E6</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem;">
+            <span>Email Ticket To:</span>
+            <strong id="pay-summary-email">alex@cosmos.com</strong>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
+            <span style="font-weight: 600;">Total Charged:</span>
+            <span style="font-size: 1.4rem; font-weight: 800; color: var(--primary);" id="pay-summary-total">$28.00</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 5: THANK YOU & AUTOMATIC EMAIL TICKET -->
+    <main id="view-thank-you" class="page-view">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="display: inline-flex; width: 60px; height: 60px; background: #10b981; color: white; border-radius: 50%; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <i data-lucide="check" style="width: 32px; height: 32px;"></i>
+        </div>
+        <h1 class="page-title">Chargily Payment Confirmed!</h1>
+        <p class="page-subtitle">Your seats are booked and your ticket email has been sent.</p>
+      </div>
+
+      <!-- Printable Ticket Stub -->
+      <div class="ticket-stub">
+        <div class="ticket-header">
+          <div style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--primary);">
+            CINEMA COSMOS TICKET PASS
+          </div>
+          <span style="font-family: monospace; font-weight: 700; background: var(--primary-light); color: var(--primary); padding: 0.3rem 0.6rem; border-radius: 4px;" id="ticket-ref-display">
+            REF: COSMOS-8942-X7
+          </span>
+        </div>
+
+        <div class="ticket-grid">
+          <div class="ticket-field">
+            <label>Movie</label>
+            <p id="ticket-movie-display">Interstellar Odyssey</p>
+          </div>
+          <div class="ticket-field">
+            <label>Showtime</label>
+            <p id="ticket-time-display">Today, 20:15</p>
+          </div>
+          <div class="ticket-field">
+            <label>Hall / Screen</label>
+            <p id="ticket-hall-display">Hall 1 (IMAX Laser)</p>
+          </div>
+          <div class="ticket-field">
+            <label>Seats</label>
+            <p id="ticket-seats-display">E5, E6 (VIP)</p>
+          </div>
+          <div class="ticket-field">
+            <label>Ticket Holder</label>
+            <p id="ticket-holder-display">Alex Vance</p>
+          </div>
+          <div class="ticket-field">
+            <label>Payment Method</label>
+            <p style="color: var(--primary);">Chargily Pay (Verified)</p>
+          </div>
+        </div>
+
+        <div style="text-align: center; border-top: 1px dashed var(--border-color); padding-top: 1rem;">
+          <button class="btn-primary" onclick="openEmailModal()">
+            <i data-lucide="mail"></i> View Sent Email Ticket
+          </button>
+          <button class="btn-secondary" onclick="window.print()" style="margin-left: 0.5rem;">
+            <i data-lucide="printer"></i> Print Ticket
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 6: CONTACT US -->
+    <main id="view-contact" class="page-view">
+      <h1 class="page-title">Contact Us</h1>
+      <p class="page-subtitle">We are here to help with any inquiries.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card-panel">
+          <h3>Send a Message</h3>
+          <form onsubmit="handleContactSubmit(event)" style="margin-top: 1rem;">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" class="form-input" placeholder="Your name" required>
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" class="form-input" placeholder="Your email" required>
+            </div>
+            <div class="form-group">
+              <label>Message</label>
+              <textarea class="form-input" rows="4" placeholder="Your message..." required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Send Message</button>
+          </form>
+        </div>
+
+        <div class="card-panel">
+          <h3>Cinema Cosmos Info</h3>
+          <p style="margin-top: 1rem; color: var(--text-muted);">
+            📍 <strong>Address:</strong> 42 Galaxy Way, Astro District<br>
+            📞 <strong>Phone:</strong> +1 (800) 555-COSMOS<br>
+            ✉️ <strong>Email:</strong> support@cinemacosmos.com<br>
+            ⏰ <strong>Hours:</strong> Mon - Sun: 10:00 AM — 01:00 AM
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <!-- VIEW 7: POLICIES -->
+    <main id="view-policies" class="page-view">
+      <h1 class="page-title">Cinema Policies</h1>
+      <p class="page-subtitle">General terms, Chargily Pay refunds, and entry guidelines.</p>
+
+      <div class="card-panel">
+        <h3 style="margin-bottom: 0.5rem;">1. Email Tickets & Entry</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+          All online ticket purchases completed via Chargily Pay are dispatched automatically as an email to your provided address. The email contains your official entry pass.
+        </p>
+
+        <h3 style="margin-bottom: 0.5rem;">2. Chargily Pay Refunds</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+          Refunds for payments processed through Chargily Pay are returned directly to your EDAHABIA or CIB card within 3-5 business days upon request.
+        </p>
+
+        <h3 style="margin-bottom: 0.5rem;">3. Age Ratings & Conduct</h3>
+        <p style="color: var(--text-muted);">
+          Please present valid photo ID for PG-13 or R-rated screenings. Mobile phones must be silenced inside halls.
+        </p>
+      </div>
+    </main>
+
+    <!-- VIEW 8: ADMIN PANEL -->
+    <main id="view-admin" class="page-view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h1 class="page-title" style="margin-bottom: 0.25rem;">🎬 Admin Dashboard</h1>
+          <p class="page-subtitle" style="margin-bottom: 0;">Manage movies, showtimes, and catalog in real-time.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <button class="btn-primary" onclick="openAddMovieModal()">
+            <i data-lucide="plus-circle"></i> Add New Movie
+          </button>
+          <button class="btn-secondary" onclick="handleUserLogout()">
+            <i data-lucide="log-out"></i> Sign Out
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Bar -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card-panel" style="text-align: center; padding: 1.25rem;">
+          <div style="font-size: 2rem; font-weight: 800; color: var(--primary);" id="admin-stat-movies">4</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">Active Movies</div>
+        </div>
+        <div class="card-panel" style="text-align: center; padding: 1.25rem;">
+          <div style="font-size: 2rem; font-weight: 800; color: #10b981;">16</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">Daily Showtimes</div>
+        </div>
+        <div class="card-panel" style="text-align: center; padding: 1.25rem;">
+          <div style="font-size: 2rem; font-weight: 800; color: #f59e0b;">3</div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">Screen Formats</div>
+        </div>
+      </div>
+
+      <!-- Movies Table -->
+      <div class="card-panel" style="padding: 0; overflow: hidden;">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="film" style="color: var(--primary);"></i>
+          <h3 style="margin: 0;">Movie Catalog</h3>
+        </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+              <tr style="background: var(--bg-input); text-align: left;">
+                <th style="padding: 0.85rem 1rem; color: var(--text-muted); font-weight: 600;">Poster</th>
+                <th style="padding: 0.85rem 1rem; color: var(--text-muted); font-weight: 600;">Title</th>
+                <th style="padding: 0.85rem 1rem; color: var(--text-muted); font-weight: 600;">Genre</th>
+                <th style="padding: 0.85rem 1rem; color: var(--text-muted); font-weight: 600;">Format</th>
+                <th style="padding: 0.85rem 1rem; color: var(--text-muted); font-weight: 600;">Duration</th>
+                <th style="padding: 0.85rem 1rem; color: var(--text-muted); font-weight: 600;">Showtimes</th>
+                <th style="padding: 0.85rem 1rem; color: var(--text-muted); font-weight: 600; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-movies-table-body">
+              <!-- Rendered by renderAdminMoviesTable() in app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p>© 2026 Cinema Cosmos. Automatic Email Tickets & Chargily Pay API v2.</p>
+    </footer>
+
+  </div>
+
+  <!-- INTERACTIVE EMAIL TICKET MODAL -->
+  <div id="email-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i data-lucide="mail"></i> Email Inbox — Cinema Cosmos Ticket</h3>
+        <button style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main);" onclick="closeEmailModal()">&times;</button>
+      </div>
+
+      <div style="background: var(--bg-input); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+        <div><strong>From:</strong> tickets@cinemacosmos.com</div>
+        <div><strong>To:</strong> <span id="modal-email-recipient">alex@cosmos.com</span></div>
+        <div><strong>Subject:</strong> 🎟️ Your Cinema Cosmos Ticket (Chargily Paid)</div>
+      </div>
+
+      <div style="background: #ffffff; color: #111111; padding: 1.5rem; border-radius: 8px;">
+        <h2 style="color: #7c3aed; margin-bottom: 0.5rem;">CINEMA COSMOS TICKET</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">Official Admission Ticket — Paid via Chargily Pay.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.9rem;">
+          <div><strong style="color: #64748b;">Movie:</strong> <br><span id="modal-email-movie" style="font-weight: 700;">Interstellar Odyssey</span></div>
+          <div><strong style="color: #64748b;">Showtime:</strong> <br><span id="modal-email-time" style="font-weight: 700;">Today, 20:15</span></div>
+          <div><strong style="color: #64748b;">Seats:</strong> <br><span id="modal-email-seats" style="font-weight: 700;">E5, E6</span></div>
+          <div><strong style="color: #64748b;">Holder:</strong> <br><span id="modal-email-holder" style="font-weight: 700;">Alex Vance</span></div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: center; padding-top: 1rem; border-top: 1px dashed #cbd5e1; font-size: 0.8rem; color: #64748b;">
+          Ref: <strong id="modal-email-ref">COSMOS-8942-X7</strong> — Please present at Hall 1 entry.
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ADMIN: ADD / EDIT MOVIE MODAL -->
+  <div id="admin-movie-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 id="admin-modal-title"><i data-lucide="film"></i> Add New Movie</h3>
+        <button style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main);" onclick="closeAdminMovieModal()">&times;</button>
+      </div>
+
+      <form onsubmit="saveAdminMovie(event)" style="display: flex; flex-direction: column; gap: 0.9rem; margin-top: 1rem;">
+        <input type="hidden" id="modal-movie-id">
+
+        <div class="form-group">
+          <label>Movie Title *</label>
+          <input type="text" id="modal-movie-title" class="form-input" placeholder="e.g. Interstellar Odyssey" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem;">
+          <div class="form-group">
+            <label>Genre *</label>
+            <input type="text" id="modal-movie-genre" class="form-input" placeholder="e.g. Sci-Fi" required>
+          </div>
+          <div class="form-group">
+            <label>Duration *</label>
+            <input type="text" id="modal-movie-duration" class="form-input" placeholder="e.g. 2h 49m" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Screen Format</label>
+          <select id="modal-movie-format" class="form-input">
+            <option value="IMAX 3D">IMAX 3D</option>
+            <option value="Dolby Cinema">Dolby Cinema</option>
+            <option value="4K Laser">4K Laser</option>
+            <option value="Standard">Standard</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Poster Image Path</label>
+          <input type="text" id="modal-movie-poster" class="form-input" placeholder="images/poster_interstellar.jpg">
+        </div>
+        <div class="form-group">
+          <label>Showtimes (comma-separated) *</label>
+          <input type="text" id="modal-movie-showtimes" class="form-input" placeholder="14:00, 17:30, 20:15, 23:00" required>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+          <button type="submit" class="btn-primary" style="flex: 1; padding: 0.85rem;">
+            <i data-lucide="save"></i> Save Movie
+          </button>
+          <button type="button" class="btn-secondary" onclick="closeAdminMovieModal()" style="padding: 0.85rem 1.2rem;">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+
+  <script src="app.js"></script>
+</body>
+</html>
